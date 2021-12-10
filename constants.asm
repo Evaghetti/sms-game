@@ -1,0 +1,6 @@
+VDP_DATA equ $be
+VDP_CTRL equ $bf
+
+VRAM_WRITE equ $4000
+CRAM_WRITE equ $C000
+
