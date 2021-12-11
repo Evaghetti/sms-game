@@ -2,8 +2,8 @@
 ;============================================================
 ; Boot section
 ;==============================================================
-.global Boot
-Boot:
+.global _start
+_start:
     di              ; disable interrupts
     im 1            ; Interrupt mode 1
     jp main         ; jump to main program
