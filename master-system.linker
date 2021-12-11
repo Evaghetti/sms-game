@@ -1,4 +1,3 @@
-OUTPUT_FORMAT("binary")
 OUTPUT_ARCH(z80)
 
 SECTIONS {
