@@ -1,6 +1,7 @@
 [![Master System](https://www.copetti.org/images/consoles/mastersystem/international.8865c9c84467b8c90fdc51dc4c7f77c6e8e3b940102462ad5d8377d56675ee19.png "Master System")](https://www.copetti.org/images/consoles/mastersystem/international.8865c9c84467b8c90fdc51dc4c7f77c6e8e3b940102462ad5d8377d56675ee19.png "Master System")
 # SMS Game (Nome Provisório)
 [![Quantidade de estelas no projeto](https://img.shields.io/github/stars/Evaghetti/sms-game "Quantidade de estelas no projeto")](https://img.shields.io/github/stars/Evaghetti/sms-game "Quantidade de estelas no projeto")  [![Bugs](https://img.shields.io/github/issues/Evaghetti/sms-game "Bugs")](https://img.shields.io/github/issues/Evaghetti/sms-game "Bugs") [![Meu twitter](https://img.shields.io/twitter/url?url=https%3A%2F%2Ftwitter.com%2FEvaghettiXD "Meu twitter")](http://https://img.shields.io/twitter/url?url=https%3A%2F%2Ftwitter.com%2FEvaghettiXD "Meu twitter")
+
 Joguinho que eu to fazendo pra estudar desenvolvimento pro Sega Master System, nome do projeto provisório.
 ## Objetivo do jogo
 Por enquanto não cheguei a planejar o que desejo que o jogo seja, to utilizando esse reposítorio para estudar como SMS funciona e, quando eu já estiver confortável com ele e o z80, começar a fazer um jogo de fato.
