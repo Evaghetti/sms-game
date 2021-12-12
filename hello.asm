@@ -112,9 +112,7 @@ PrintText:
 
 .data
 Message:
-.ascii "ENZO VAGHETTI"
-.db 0
-MessageEnd:
+.ascii "HELLO WORLD! MEU NOME E ENZO"
 
 ; VDP initialisation data
 VdpData:
