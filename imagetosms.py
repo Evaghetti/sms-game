@@ -134,6 +134,7 @@ if __name__ == "__main__":
 
     # Gera um arquivo .asm com os bytes da paleta e dos tiles
     with open(args.out + "/" + pathToImage[pathToImage.rfind("/") + 1 : pathToImage.find(".")] + ".asm", "w") as fileOutput:
+        print(".data", file=fileOutput)
         print("PaletteData:", file = fileOutput)
         for i in range(0, len(palette), 16):
             print(".db", end=" ", file = fileOutput)
