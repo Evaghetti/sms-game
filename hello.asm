@@ -55,6 +55,8 @@ main:
         jp nz, LoadFontTile
 
     ld hl, Message
+    ld b, 6
+    ld c, 10
     call PrintText
 
     ; Turn screen on
@@ -72,19 +74,56 @@ Loop:
     jp Loop
 
 
-;
 ; Printa texto em tela no background
 ; INPUT : hl -> Endereço da mensagem na ROM.
+;   =   : b  -> Posição X do testo dentro do tilemap.
+;   =   : c  -> Posição Y do testo dentro do tilemap.
 ; OUTPUT: Nenhum
 ; AFETA : hl
 PrintText:
-    ; Seta para colocar tiles no inicio do tilemap ($4000 | VRAM_WRITE)
-    ; TOOD: Setar posição por parâmetro.
-    ld a, $00
+    ; Primeiramente seta a posição dentro do tilemap
+    push hl ; Salva o endereço da mensagem que vai ser printada.
+
+    ; Tilemap começa 3800, endereço base é esse
+    ld hl, VRAM_WRITE | $3800
+
+    ; Se a posição Y passada for 0, não precisa multiplicar por 64
+    ld a, c
+    cp $00
+    jp z, FixPositionX ; Pula pra ajeitar a posição X
+
+    ; Cada linha do tilemap tem 32 tiles, como cada tile são 2 bytes...
+    ; Multplica por 64 o numero em c
+    LoopMultiplyY:
+        ld a, l
+        add a, $40
+        ld l, a
+        adc a, h
+        sub l
+        ld h, a
+
+        dec c
+        jp nz, LoopMultiplyY
+
+    ; Verifica se posição X for 0, se for não precisa ajeitar nada
+    FixPositionX:
+    ld a, b
+    cp $00
+    jp z, SetPosition
+
+    ; Multiplica o número em b por 2 (cada tyle é 2 bytes).
+    rla
+    or l
+    ld l, a
+
+    ; Seta a posição do tilemap a ser escrita.
+    SetPosition:
+    ld a, l
     out (VDP_CTRL), a
-    ld a, $78
+    ld a, h
     out (VDP_CTRL), a
 
+    pop hl ; Recupera o endereço da mensagem.
     LoopPrint:
         ; Carrega o caractere atual, se for 0, é o fim da string e termina o looping
         ld a, (hl)
@@ -112,7 +151,7 @@ PrintText:
 
 .data
 Message:
-.ascii "HELLO WORLD! MEU NOME E ENZO"
+.asciz "MENSAGEM POSICIONADA"
 
 ; VDP initialisation data
 VdpData:
