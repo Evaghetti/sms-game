@@ -6,20 +6,20 @@ AWK=awk
 
 CCFLAGS=-g
 
-SRCS=hello.asm pause.asm boot.asm
+SRCS=main.asm pause.asm boot.asm
 OBJS=$(subst .asm,.o,$(SRCS))
 
 %.o : %.asm
 	$(CC) $(CCFLAGS) $< -o $@
 
-hello.sms : $(OBJS)
+main.sms : $(OBJS)
 	$(LD) $(OBJS) -T master-system.linker -o $(subst .sms,.elf,$@)
 	$(OC) -O binary $(subst .sms,.elf,$@) $@
 	$(NM) $(subst .sms,.elf,$@) > temp.sym
 	$(AWK) -F' ' '{ print $$1,$$3 }' temp.sym > $@.sym
 	rm temp.sym
 
-all: hello.sms
+all: main.sms
 
 clean:
 	rm -rf $(OBJS) *.sym *.elf
