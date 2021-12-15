@@ -8,5 +8,5 @@ SECTIONS {
 
     .text : { *(.text) }
     .data : { *(.data) }
-    .bss  : { *(.bss)  }
+    .bss 0xC000 : { *(.bss)  }
 }

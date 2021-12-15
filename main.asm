@@ -73,6 +73,8 @@ main:
     MainLoop:
         halt ; Master System só tem um interrupt, aguarda ele ocorrer
         
+        call ReadControllers
+
         ld hl, Message
         ld b, 6
         ld c, 10
@@ -153,6 +155,19 @@ PrintText:
     EndPrintText:
     ret
 
+; Lê os botões sendo apertados pelo controle 1 e 2
+; Salvando em (controller1) e (controller2) respectivamente
+; INPUT : Nenhum
+; OUTPUT: (controller1) com os botões apertados (bits ligados) do controle 1
+;    =  : (controller2) com os botões apertados (bits ligados) do controle 2
+; AFFECT: a
+; TODO  : Leitura controle 2
+ReadControllers:
+    in a, (IN_JOY_1)
+    and $3f ; Remove os bits que possuem os botoes do controle 2
+    xor $3f ; Inverte eles também
+    ld (controller1), a
+    ret
 ;==============================================================
 ; Data
 ;==============================================================
@@ -165,3 +180,7 @@ Message:
 VdpData:
 .db %00010110,$80,$00,$81,$ff,$82,$ff,$85,$ff,$86,$ff,$87,$00,$88,$00,$89,$ff,$8a
 VdpDataEnd:
+
+.bss
+controller1: .ds 1
+controller2: .ds 1
