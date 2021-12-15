@@ -54,24 +54,32 @@ main:
         or c
         jp nz, LoadFontTile
 
-    ld hl, Message
-    ld b, 6
-    ld c, 10
-    call PrintText
-
     ; Turn screen on
-    ld a,%11000000
-;          |||| |`- Zoomed sprites -> 16x16 pixels
-;          |||| `-- Doubled sprites -> 2 tiles per sprite, 8x16
-;          |||`---- 30 row/240 line mode
-;          ||`----- 28 row/224 line mode
-;          |`------ VBlank interrupts
-;          `------- Enable display
+    ld a,%11100000
+;         |||||||`- b0 Sempre 0
+;         ||||||`-- b1 Tamanho dos sprites, 0 8x8, 1 8x16
+;         |||||`--- b2 Sempre 0
+;         ||||`---- b3 Sempre 0
+;         |||`----- b4 Sempre 0
+;         ||`------ b5 VBlank interrupts
+;         |`------- b6 Enable display
+;         `-------- b7 Sempre 1
+
     out (VDP_CTRL), a
     ld a, $81
     out (VDP_CTRL), a
-Loop:
-    jp Loop
+
+    ei ; Reabilita interrupts para responder ao VBlank
+    MainLoop:
+        halt ; Master System só tem um interrupt, aguarda ele ocorrer
+        
+        ld hl, Message
+        ld b, 6
+        ld c, 10
+        call PrintText
+        
+        ; TODO: Game Logic
+        jp MainLoop
 
 
 ; Printa texto em tela no background
@@ -155,5 +163,5 @@ Message:
 
 ; VDP initialisation data
 VdpData:
-.db $04,$80,$00,$81,$ff,$82,$ff,$85,$ff,$86,$ff,$87,$00,$88,$00,$89,$ff,$8a
+.db %00010110,$80,$00,$81,$ff,$82,$ff,$85,$ff,$86,$ff,$87,$00,$88,$00,$89,$ff,$8a
 VdpDataEnd:

@@ -2,9 +2,11 @@ OUTPUT_ARCH(z80)
 
 SECTIONS {
     output 0x0000 : {boot.o(.text)}
+    output 0x0038 : {vblank.o(.text)}
     output 0x0066 : {pause.o(.text)}
     output 0x7ff0 : {boot.o(.data)}
 
     .text : { *(.text) }
     .data : { *(.data) }
+    .bss  : { *(.bss)  }
 }
