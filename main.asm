@@ -97,6 +97,35 @@ main:
         
         call ReadControllers
 
+        ld a, (controller1)
+        and JOY1_BUT_LEFT
+        jp z, VerificaDireita
+            ld a, (posX)
+            sub $02
+            ld (posX), a
+        VerificaDireita:
+        ld a, (controller1)
+        and JOY1_BUT_RIGHT
+        jp z, VerificaCima
+            ld a, (posX)
+            add a, $02
+            ld (posX), a
+        VerificaCima:
+        ld a, (controller1)
+        and JOY1_BUT_UP
+        jp z, VerificaBaixo
+            ld a, (posY)
+            sub $02
+            ld (posY), a
+        VerificaBaixo:
+        ld a, (controller1)
+        and JOY1_BUT_DOWN
+        jp z, FimControle
+            ld a, (posY)
+            add a, $02
+            ld (posY), a
+        FimControle:
+
         ld hl, Message
         ld b, 6
         ld c, 10
