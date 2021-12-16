@@ -1,4 +1,5 @@
 .include "constants.asm"
+.include "player.asm"
 .include "tileset.asm"
 
 .text
@@ -38,6 +39,17 @@ main:
     ld c, VDP_DATA
     otir
 
+    ; Seta pro ínicio da paleta de sprites
+    ld a, $10
+    out (VDP_CTRL), a
+    ld a, $C0
+    out (VDP_CTRL), a
+
+    ld hl, PlayerPaletteData
+    ld b, PlayerPaletteDataEnd - PlayerPaletteData
+    ld c, VDP_DATA
+    otir
+
     ld a, $00
     out (VDP_CTRL), a
     ld a, $40
@@ -53,6 +65,11 @@ main:
         ld a, b
         or c
         jp nz, LoadFontTile
+
+    ld hl, PlayerTileData
+    ld b, PlayerTileDataEnd - PlayerTileData
+    ld c, VDP_DATA
+    otir
 
     ; Turn screen on
     ld a,%11100000
@@ -79,7 +96,28 @@ main:
         ld b, 6
         ld c, 10
         call PrintText
-        
+
+        ; Seta a posição dos 4 sprites dos player, e seus index
+        ld bc, $0000
+        ld l, $00
+        ld d, $3b
+        call SetSpritePosition
+
+        ld bc, $0800
+        ld l, $01
+        ld d, $3c
+        call SetSpritePosition
+
+        ld bc, $0008
+        ld l, $02
+        ld d, $3d
+        call SetSpritePosition
+
+        ld bc, $0808
+        ld l, $03
+        ld d, $3e
+        call SetSpritePosition
+
         ; TODO: Game Logic
         jp MainLoop
 
@@ -168,6 +206,57 @@ ReadControllers:
     xor $3f ; Inverte eles também
     ld (controller1), a
     ret
+
+; Seta a posição de um sprite em tela.
+; INPUT : l -> Index do sprite a ser setada a posição
+;   =   : b -> Posição X (00-FF)
+;   =   : c -> Posição Y (00-FF)
+;   =   : d -> Index do tile a qual esse sprite mostra
+; OUTPUT: None
+; AFFECT: hl, a
+; TODO  : Talvez separar atualizar posição e index do tile?
+SetSpritePosition:
+    ; High byte de onde estão os prites na VDP
+    ; (VRAM_WRITE | $3f00) -> $7f00 -> $7f
+    ld h, $7f 
+
+    ; Seta VDP pra posição Y do tile que vai ser atualizado.
+    ld a, l
+    out (VDP_CTRL), a
+    ld a, h
+    out (VDP_CTRL), a
+
+    ; Passa a posição Y pra VDP
+    ld a, c
+    out (VDP_DATA), a
+
+    ; d é usado numa soma 16-bit, salva pra n alterar os valores desse registrador
+    ; TODO: Necessário?
+    push de
+        ; Posição X e qual o tile desse sprite tá mais pra frente na memória
+        ; Sempre em par, então multiplica o indice por 2
+        ld a, l
+        rla
+        ld l, a
+        ; 64 bytes pra frente tá os dados que vão ser atualizados.
+        ld de, $0080
+        add hl, de
+    pop de
+
+    ; Seta VDP pro endereço da posição X
+    ld a, l
+    out (VDP_CTRL), a
+    ld a, h
+    out (VDP_CTRL), a
+
+    ; Escreve a posição X na VDP
+    ld a, b
+    out (VDP_DATA), a
+
+    ; Em seguida, o tile
+    ld a, d
+    out (VDP_DATA), a
+    ret
 ;==============================================================
 ; Data
 ;==============================================================
@@ -178,7 +267,17 @@ Message:
 
 ; VDP initialisation data
 VdpData:
-.db %00010110,$80,$00,$81,$ff,$82,$ff,$85,$ff,$86,$ff,$87,$00,$88,$00,$89,$ff,$8a
+.db %00010110 ; r0
+.db %10000000 ; r1
+.db %11111111 ; r2
+.db %11111111 ; r3
+.db %11111111 ; r4
+.db %11111111 ; r5
+.db %11111111 ; r6
+.db %10000101 ; r7
+.db %00000000 ; r8
+.db %00000000 ; r9
+.db %11111111 ; r10
 VdpDataEnd:
 
 .bss

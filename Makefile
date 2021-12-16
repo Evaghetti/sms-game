@@ -6,7 +6,7 @@ AWK=awk
 
 CCFLAGS=-g
 
-SRCS=main.asm pause.asm boot.asm vblank.asm
+SRCS=main.asm pause.asm boot.asm vblank.asm player.asm
 OBJS=$(subst .asm,.o,$(SRCS))
 
 %.o : %.asm
