@@ -86,6 +86,11 @@ main:
     ld a, $81
     out (VDP_CTRL), a
 
+    ld a, 128
+    ld (posX), a
+    ld a, 16
+    ld (posY), a
+
     ei ; Reabilita interrupts para responder ao VBlank
     MainLoop:
         halt ; Master System só tem um interrupt, aguarda ele ocorrer
@@ -97,23 +102,40 @@ main:
         ld c, 10
         call PrintText
 
+        ld ix, posX
+        ld iy, posY
+
         ; Seta a posição dos 4 sprites dos player, e seus index
-        ld bc, $0000
+        ld b, (ix)
+        ld c, (iy)
+        
         ld l, $00
         ld d, $3b
         call SetSpritePosition
 
-        ld bc, $0800
+        ld a, b
+        add a, $08
+        ld b, a
+
         ld l, $01
         ld d, $3c
         call SetSpritePosition
 
-        ld bc, $0008
+        ld a, b
+        sub $08
+        ld b, a
+        ld a, c
+        add a, $08
+        ld c, a
+        
         ld l, $02
         ld d, $3d
         call SetSpritePosition
 
-        ld bc, $0808
+        ld a, b
+        add a, $08
+        ld b, a
+
         ld l, $03
         ld d, $3e
         call SetSpritePosition
@@ -283,3 +305,5 @@ VdpDataEnd:
 .bss
 controller1: .ds 1
 controller2: .ds 1
+posX       : .ds 1
+posY       : .ds 1
