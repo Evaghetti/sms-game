@@ -1,12 +1,18 @@
 OUTPUT_ARCH(z80)
 
-SECTIONS {
-    output 0x0000 : {boot.o(.text)}
-    output 0x0038 : {vblank.o(.text)}
-    output 0x0066 : {pause.o(.text)}
-    output 0x7ff0 : {boot.o(.data)}
+MEMORY {
+ rom    (rx)  : ORIGIN = 0x0000, LENGTH = 0x7fef
+ header (rx)  : ORIGIN = 0x7ff0, LENGTH = 0x8000
+ ram    (rwx) : ORIGIN = 0xC000, LENGTH = 0xFFFF
+}
 
-    .text : { *(.text) }
-    .data : { *(.data) }
-    .bss 0xC000 : { *(.bss)  }
+SECTIONS {
+    boot_code   0x0000 : {boot.o(.text)} > rom
+    vblank_code 0x0038 : {vblank.o(.text)} > rom
+    pause_code  0x0066 : {pause.o(.text)} > rom
+    header_data 0x7ff0 : {boot.o(.data)} > header
+
+    .text : { *(.text) } > rom
+    .data : { *(.data) } > rom
+    .bss : { *(.bss)  } > ram
 }
