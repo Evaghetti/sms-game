@@ -286,6 +286,7 @@ SetSpritePosition:
     push de
         ; Posição X e qual o tile desse sprite tá mais pra frente na memória
         ; Sempre em par, então multiplica o indice por 2
+        and a
         ld a, l
         rla
         ld l, a

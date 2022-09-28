@@ -14,12 +14,12 @@ OBJS=$(subst .asm,.o,$(SRCS))
 	$(CC) $(CCFLAGS) $< -o $@
 
 main.sms : $(OBJS)
-	$(LD) $(OBJS) -T master-system.linker -o $(subst .sms,.elf,$@)
+	$(LD) main.o -T master-system.linker -o $(subst .sms,.elf,$@)
 	$(OC) -O binary $(subst .sms,.elf,$@) $@
-	$(NM) $(subst .sms,.elf,$@) > temp.sym
+	$(NM) $(subst .sms,.elf,$@) > $(subst .sms,.sym,$@)
 	$(PY) fix-checksum.py $@
-	$(AWK) -F' ' '{ print $$1,$$3 }' temp.sym > $(subst .sms,.sym,$@)
-	rm temp.sym
+#	$(AWK) -F' ' '{ print $$1,$$3 }' temp.sym > $(subst .sms,.sym,$@)
+#	rm temp.sym
 
 all: main.sms
 
