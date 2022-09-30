@@ -86,9 +86,9 @@ main:
     ld a, $81
     out (VDP_CTRL), a
 
-    ld a, 128
+    ld a, $74
     ld (posX), a
-    ld a, 16
+    ld a, $4c
     ld (posY), a
 
     ei ; Reabilita interrupts para responder ao VBlank
@@ -127,16 +127,15 @@ main:
         FimControle:
 
         ld hl, Message
-        ld b, 6
-        ld c, 10
+        ld b, $0c
+        ld c, $0a
         call PrintText
 
-        ld ix, posX
-        ld iy, posY
-
         ; Seta a posição dos 4 sprites dos player, e seus index
-        ld b, (ix)
-        ld c, (iy)
+        ld a, (posX)
+        ld b, a
+        ld a, (posY)
+        ld c, a
         
         ld l, $00
         ld d, $3b
@@ -175,74 +174,58 @@ main:
 
 ; Printa texto em tela no background
 ; INPUT : hl -> Endereço da mensagem na ROM.
-;   =   : b  -> Posição X do testo dentro do tilemap.
-;   =   : c  -> Posição Y do testo dentro do tilemap.
+;   =   : b  -> Posição Y do testo dentro do tilemap.
+;   =   : c  -> Posição X do testo dentro do tilemap.
 ; OUTPUT: Nenhum
-; AFETA : hl
+; AFETA : hl, b, c
 PrintText:
-    ; Primeiramente seta a posição dentro do tilemap
-    push hl ; Salva o endereço da mensagem que vai ser printada.
+    ; Transforma bc no offset necessário dentro do tilemap
+    
+    ; Cada tile são 2 bytes, como uma linha no tilemap são 32 tiles
+    ; É necessário pular 64 bytes para ir para próxima linha
+    ; Shifta os bits em b para direita duas vezes, 
+    ; e coloca o carry em a (seta os bits o bit 7 pra frente)
+    xor a
+    rr b
+    rra
+    rr b
+    rra
 
-    ; Tilemap começa 3800, endereço base é esse
-    ld hl, VRAM_WRITE | $3800
+    ; Multiplica a posição X em 2, e junta isso aos bits que foram
+    ; retirados no carry, efetivamente fica b:--YYYYYY c:YYXXXXXX
+    rl c
+    or c
+    ld c, a
 
-    ; Se a posição Y passada for 0, não precisa multiplicar por 64
-    ld a, c
-    cp $00
-    jp z, FixPositionX ; Pula pra ajeitar a posição X
+    push hl
+        ld hl, VRAM_WRITE | $3800 ; Endereço base do tilemap
+        add hl, bc ; Acrescenda no endereço base o offset calculado acima
 
-    ; Cada linha do tilemap tem 32 tiles, como cada tile são 2 bytes...
-    ; Multplica por 64 o numero em c
-    LoopMultiplyY:
+        ; Seta o local que VDP vai escrever os tiles a seguir.
         ld a, l
-        add a, $40
-        ld l, a
-        adc a, h
-        sub l
-        ld h, a
+        out (VDP_CTRL), a
+        ld a, h
+        out (VDP_CTRL), a
+    pop hl
 
-        dec c
-        jp nz, LoopMultiplyY
-
-    ; Verifica se posição X for 0, se for não precisa ajeitar nada
-    FixPositionX:
-    ld a, b
+LoopPrint:
+    ; Carrega o caractere atual, se for 0, é o fim da string e termina o looping
+    ld a, (hl)
     cp $00
-    jp z, SetPosition
+    ret z
 
-    ; Multiplica o número em b por 2 (cada tyle é 2 bytes).
-    rla
-    or l
-    ld l, a
+    ; Subtrai do ASCII carregado o ASCII do primeiro caractere permitido
+    ; Assim consigo indexar o caractere.
+    sub $20
+    out (VDP_DATA), a
 
-    ; Seta a posição do tilemap a ser escrita.
-    SetPosition:
-    ld a, l
-    out (VDP_CTRL), a
-    ld a, h
-    out (VDP_CTRL), a
+    ; O VDP Espera 2 bytes.
+    ld a, $00
+    out (VDP_DATA), a
 
-    pop hl ; Recupera o endereço da mensagem.
-    LoopPrint:
-        ; Carrega o caractere atual, se for 0, é o fim da string e termina o looping
-        ld a, (hl)
-        cp $00
-        jp z, EndPrintText
-
-        ; Subtrai do ASCII carregado o ASCII do primeiro caractere permitido
-        ; Assim consigo indexar o caractere.
-        sub $20
-        out (VDP_DATA), a
-
-        ; O VDP Espera 2 bytes.
-        ld a, $00
-        out (VDP_DATA), a
-
-        ; Incrementa e volta o looping.
-        inc hl
-        jp LoopPrint
-    EndPrintText:
-    ret
+    ; Incrementa e volta o looping.
+    inc hl
+    jp LoopPrint
 
 ; Lê os botões sendo apertados pelo controle 1 e 2
 ; Salvando em (controller1) e (controller2) respectivamente
@@ -287,9 +270,7 @@ SetSpritePosition:
         ; Posição X e qual o tile desse sprite tá mais pra frente na memória
         ; Sempre em par, então multiplica o indice por 2
         and a
-        ld a, l
-        rla
-        ld l, a
+        rl l
         ; 64 bytes pra frente tá os dados que vão ser atualizados.
         ld de, $0080
         add hl, de
@@ -315,7 +296,7 @@ SetSpritePosition:
 
 .data
 Message:
-.asciz "MENSAGEM POSICIONADA"
+.asciz "HELLO WORLD"
 
 ; VDP initialisation data
 VdpData:
