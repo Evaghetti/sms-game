@@ -233,12 +233,39 @@ LoopPrint:
 ; OUTPUT: (controller1) com os botões apertados (bits ligados) do controle 1
 ;    =  : (controller2) com os botões apertados (bits ligados) do controle 2
 ; AFFECT: a
-; TODO  : Leitura controle 2
 ReadControllers:
-    in a, (IN_JOY_1)
-    and $3f ; Remove os bits que possuem os botoes do controle 2
-    xor $3f ; Inverte eles também
-    ld (controller1), a
+    push bc
+        in a, (IN_JOY_1) ; Lê os botões do controle 1 e cima/baixo do controle 2
+        ld c, a ; Salva o estado dos controles
+        and %00111111 ; Mantém apenas os botões do controle 1
+        xor %00111111 ; Inverte eles também
+        ld (controller1), a
+        
+        ; 0 o registrador b
+        xor a
+        ld b, a
+        ld a, c ; Restaura os botoes como estavam ao ser lidos
+
+        ; Mantém apenas os botoes do controle 2
+        ; E coloca eles nos primeiros bits de b
+        and %11000000
+        rla
+        rl b
+        rla
+        rl b
+
+        ; Lê o restante do controle 2 e shifta pra esquerda para caber os
+        ; botoes de IN_JOY_1
+        in a, (IN_JOY_2)
+        rla
+        rla
+        
+        ; Une b com a, formando assim todo os botoes do controle
+        or b
+        ; Inverte e salva
+        xor $ff
+        ld (controller2), a
+    pop bc
     ret
 
 ; Seta a posição de um sprite em tela.

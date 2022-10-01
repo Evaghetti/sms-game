@@ -3,7 +3,6 @@ LD=z80-elf-ld
 OC=z80-elf-objcopy
 NM=z80-elf-nm
 PY=python3
-AWK=awk
 
 CCFLAGS=-g
 
@@ -18,8 +17,6 @@ main.sms : $(OBJS)
 	$(OC) -O binary $(subst .sms,.elf,$@) $@
 	$(NM) $(subst .sms,.elf,$@) > $(subst .sms,.sym,$@)
 	$(PY) fix-checksum.py $@
-#	$(AWK) -F' ' '{ print $$1,$$3 }' temp.sym > $(subst .sms,.sym,$@)
-#	rm temp.sym
 
 all: main.sms
 
